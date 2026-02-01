@@ -23,24 +23,32 @@ export class PipbotAPI {
     }
 
     // Use Obsidian's requestUrl to bypass CORS restrictions
-    const response = await requestUrl({
-      url: `${this.settings.gatewayUrl}/v1/chat/completions`,
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.settings.gatewayToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "clawdbot:main",
-        messages: [
-          { role: "system", content: systemParts.join("\n") },
-          { role: "user", content: message },
-        ],
-      }),
-    });
+    const url = `${this.settings.gatewayUrl}/v1/chat/completions`;
+    let response;
+    try {
+      response = await requestUrl({
+        url,
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.settings.gatewayToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "clawdbot:main",
+          messages: [
+            { role: "system", content: systemParts.join("\n") },
+            { role: "user", content: message },
+          ],
+        }),
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      throw new Error(`Request to ${url} failed: ${msg}`);
+    }
 
     if (response.status >= 400) {
-      throw new Error(`API error: ${response.status}`);
+      const body = typeof response.text === "string" ? response.text : "";
+      throw new Error(`HTTP ${response.status} from ${url}\n${body}`.trim());
     }
 
     const data = response.json;

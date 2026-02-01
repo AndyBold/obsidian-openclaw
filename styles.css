@@ -44,6 +44,40 @@
   align-self: flex-start;
 }
 
+.pip-message.pip-error {
+  background: var(--background-modifier-error);
+  border: 1px solid var(--text-error);
+  align-self: stretch;
+  max-width: 100%;
+}
+
+.pip-error-text {
+  display: block;
+  padding: 8px;
+  background: var(--background-primary);
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  user-select: text;
+  cursor: text;
+}
+
+.pip-copy-btn {
+  margin-top: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.pip-copy-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
 .pip-message-content {
   line-height: 1.5;
 }

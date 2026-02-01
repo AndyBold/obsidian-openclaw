@@ -19,7 +19,7 @@ export type PipAction =
   | { action: "openFile"; path: string };
 
 export interface ChatMessage {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "error";
   content: string;
   timestamp: number;
   actions?: PipAction[];

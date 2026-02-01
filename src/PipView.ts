@@ -123,9 +123,10 @@ export class PipView extends ItemView {
       }
     } catch (err) {
       loadingEl.remove();
+      const errorMsg = err instanceof Error ? err.message : String(err);
       this.addMessage({
-        role: "assistant",
-        content: `Error: ${err instanceof Error ? err.message : "Something went wrong"}`,
+        role: "error",
+        content: errorMsg,
         timestamp: Date.now(),
       });
     }
@@ -151,6 +152,20 @@ export class PipView extends ItemView {
         "",
         this.plugin
       );
+    } else if (msg.role === "error") {
+      // Error messages are selectable/copyable
+      const errorText = contentEl.createEl("code", { cls: "pip-error-text" });
+      errorText.setText(msg.content);
+      
+      const copyBtn = contentEl.createEl("button", { 
+        cls: "pip-copy-btn",
+        text: "Copy"
+      });
+      copyBtn.addEventListener("click", async () => {
+        await navigator.clipboard.writeText(msg.content);
+        copyBtn.setText("Copied!");
+        setTimeout(() => copyBtn.setText("Copy"), 1500);
+      });
     } else {
       contentEl.setText(msg.content);
     }
