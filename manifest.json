@@ -1,0 +1,9 @@
+{
+  "id": "obsidian-openclaw",
+  "name": "OpenClaw",
+  "version": "0.1.0",
+  "minAppVersion": "1.0.0",
+  "description": "Chat with Pip (OpenClaw) from Obsidian. Create, edit, and manage notes through conversation.",
+  "author": "Andy Bold",
+  "isDesktopOnly": false
+}
