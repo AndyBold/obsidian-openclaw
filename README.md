@@ -8,6 +8,8 @@ Chat with OpenClaw directly from Obsidian. Create, edit, and manage notes throug
 - **Context-aware** - Optionally include the current note in your conversation
 - **File operations** - OpenClaw can create, update, append to, delete, and rename files
 - **Markdown rendering** - Responses render as proper markdown
+- **Secure token storage** - Uses OS keychain when available
+- **Audit logging** - Optional logging of all file actions
 
 ## Installation
 
@@ -62,14 +64,66 @@ The chat panel opens in the right sidebar. You can drag it to a different positi
 
 When you ask OpenClaw to work with files, it returns structured actions that the plugin executes:
 
-| Action | Description |
-|--------|-------------|
-| `createFile` | Create a new file with content |
-| `updateFile` | Replace file contents |
-| `appendToFile` | Add content to end of file |
-| `deleteFile` | Delete a file |
-| `renameFile` | Rename/move a file |
-| `openFile` | Open a file in the editor |
+| Action | Description | Requires Confirmation |
+|--------|-------------|----------------------|
+| `createFile` | Create a new file with content | No |
+| `updateFile` | Replace file contents | **Yes** |
+| `appendToFile` | Add content to end of file | No |
+| `deleteFile` | Delete a file | **Yes** |
+| `renameFile` | Rename/move a file | **Yes** |
+| `openFile` | Open a file in the editor | No |
+
+Destructive actions (update, delete, rename) show a confirmation dialog before executing.
+
+## Security & Privacy
+
+### Token Storage
+
+Your gateway token is stored securely using a priority-based system:
+
+| Priority | Method | Description |
+|----------|--------|-------------|
+| 1 | **Environment Variable** | Set `OPENCLAW_TOKEN` — token never touches Obsidian |
+| 2 | **OS Keychain** | Encrypted via Electron safeStorage |
+| 3 | **Plaintext** | Fallback — avoid syncing plugin folder |
+
+**OS Keychain support:**
+- **macOS**: Keychain
+- **Windows**: DPAPI (Data Protection API)
+- **Linux**: libsecret (GNOME Keyring) or kwallet
+
+The settings page shows your current storage method with a security indicator (🔒 or ⚠️).
+
+**Using an environment variable (recommended for maximum security):**
+
+```bash
+# Add to your shell profile (~/.zshrc, ~/.bashrc, etc.)
+export OPENCLAW_TOKEN="your-token-here"
+```
+
+Then restart Obsidian. The token field will show "Using Environment Variable".
+
+### Note Content
+
+When "Include current note" is checked, the full content of your current note is sent to:
+1. Your Clawdbot gateway
+2. The configured LLM provider (Anthropic, OpenAI, etc.)
+
+**Be mindful of sensitive content** — uncheck "Include current note" when working with private information.
+
+### Audit Logging
+
+Enable audit logging to track all file operations:
+
+1. Open Settings → OpenClaw
+2. Enable "Enable audit logging"
+3. Optionally change the log path (default: `OpenClaw/audit-log.md`)
+
+The audit log records:
+- Timestamp
+- Action status (✅ success, ❌ failed, ⏭️ skipped)
+- Action type
+- File paths affected
 
 ## Configuration
 
@@ -77,7 +131,9 @@ When you ask OpenClaw to work with files, it returns structured actions that the
 |---------|-------------|---------|
 | Gateway URL | Clawdbot gateway address (no trailing slash) | `http://127.0.0.1:18789` |
 | Gateway Token | Auth token for the gateway | (empty) |
-| Show actions in chat | Display action indicators | false |
+| Show actions in chat | Display action indicators | `false` |
+| Enable audit logging | Log file actions to markdown | `false` |
+| Audit log path | Path for the audit log | `OpenClaw/audit-log.md` |
 
 ## OpenClaw Setup
 
