@@ -1,6 +1,8 @@
 export interface OpenClawSettings {
   gatewayUrl: string;
-  gatewayToken: string;
+  // Token storage - uses encrypted if available, falls back to plaintext
+  gatewayTokenEncrypted: string | null;
+  gatewayTokenPlaintext: string;
   showActionsInChat: boolean;
   auditLogEnabled: boolean;
   auditLogPath: string;
@@ -8,7 +10,8 @@ export interface OpenClawSettings {
 
 export const DEFAULT_SETTINGS: OpenClawSettings = {
   gatewayUrl: "http://127.0.0.1:18789",
-  gatewayToken: "",
+  gatewayTokenEncrypted: null,
+  gatewayTokenPlaintext: "",
   showActionsInChat: false,
   auditLogEnabled: false,
   auditLogPath: "OpenClaw/audit-log.md",

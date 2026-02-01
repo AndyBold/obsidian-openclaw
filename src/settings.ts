@@ -1,5 +1,6 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import type OpenClawPlugin from "../main";
+import { secureTokenStorage } from "./secureStorage";
 
 export class OpenClawSettingTab extends PluginSettingTab {
   constructor(app: App, private plugin: OpenClawPlugin) {
@@ -26,19 +27,44 @@ export class OpenClawSettingTab extends PluginSettingTab {
           })
       );
 
-    new Setting(containerEl)
+    // Token security status
+    const statusInfo = secureTokenStorage.getStatusInfo();
+    const tokenSetting = new Setting(containerEl)
       .setName("Gateway Token")
-      .setDesc("Authentication token for the OpenClaw gateway")
-      .addText((text) => {
+      .setDesc("Authentication token for the OpenClaw gateway");
+
+    // Show current security status
+    const statusEl = containerEl.createDiv({ cls: "openclaw-token-status" });
+    const statusIcon = statusInfo.secure ? "🔒" : "⚠️";
+    statusEl.innerHTML = `<span class="openclaw-status-${statusInfo.secure ? 'secure' : 'insecure'}">${statusIcon} ${statusInfo.description}</span>`;
+
+    // If using env var, just show info (no input needed)
+    if (statusInfo.method === "envVar") {
+      tokenSetting.addButton((btn) =>
+        btn
+          .setButtonText("Using Environment Variable")
+          .setDisabled(true)
+      );
+    } else {
+      // Get current token for display
+      const currentToken = secureTokenStorage.getToken(
+        this.plugin.settings.gatewayTokenEncrypted,
+        this.plugin.settings.gatewayTokenPlaintext
+      );
+
+      tokenSetting.addText((text) => {
         text
           .setPlaceholder("Enter your token")
-          .setValue(this.plugin.settings.gatewayToken)
+          .setValue(currentToken)
           .onChange(async (value) => {
-            this.plugin.settings.gatewayToken = value;
+            const { encrypted, plaintext } = secureTokenStorage.setToken(value);
+            this.plugin.settings.gatewayTokenEncrypted = encrypted;
+            this.plugin.settings.gatewayTokenPlaintext = plaintext;
             await this.plugin.saveSettings();
           });
         text.inputEl.type = "password";
       });
+    }
 
     new Setting(containerEl)
       .setName("Show actions in chat")
@@ -87,16 +113,28 @@ export class OpenClawSettingTab extends PluginSettingTab {
 
     testBtn.addEventListener("click", async () => {
       testResult.setText("Testing...");
+      testResult.removeClass("openclaw-test-success", "openclaw-test-error");
       try {
         const response = await this.plugin.api.chat("Say 'Connection successful!' in 5 words or less", {});
         testResult.setText(`✓ ${response.text}`);
         testResult.addClass("openclaw-test-success");
-        testResult.removeClass("openclaw-test-error");
       } catch (err) {
         testResult.setText(`✗ ${err instanceof Error ? err.message : "Failed"}`);
         testResult.addClass("openclaw-test-error");
-        testResult.removeClass("openclaw-test-success");
       }
     });
+
+    // Security info section
+    containerEl.createEl("h3", { text: "Security Info" });
+    
+    const securityInfo = containerEl.createDiv({ cls: "openclaw-security-info" });
+    securityInfo.innerHTML = `
+      <p><strong>Token Storage Methods (in priority order):</strong></p>
+      <ol>
+        <li><strong>Environment Variable</strong> — Set <code>OPENCLAW_TOKEN</code> to keep the token out of Obsidian entirely</li>
+        <li><strong>OS Keychain</strong> — Uses Electron safeStorage (Keychain on macOS, DPAPI on Windows, libsecret on Linux)</li>
+        <li><strong>Plaintext</strong> — Stored in plugin settings. Avoid syncing <code>.obsidian/plugins/obsidian-openclaw/</code></li>
+      </ol>
+    `;
   }
 }

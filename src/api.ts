@@ -1,8 +1,16 @@
 import { requestUrl } from "obsidian";
 import { OpenClawSettings, ChatResponse, OpenClawAction } from "./types";
+import { secureTokenStorage } from "./secureStorage";
 
 export class OpenClawAPI {
   constructor(private settings: OpenClawSettings) {}
+
+  private getToken(): string {
+    return secureTokenStorage.getToken(
+      this.settings.gatewayTokenEncrypted,
+      this.settings.gatewayTokenPlaintext
+    );
+  }
 
   async chat(
     message: string,
@@ -30,7 +38,7 @@ export class OpenClawAPI {
         url,
         method: "POST",
         headers: {
-          Authorization: `Bearer ${this.settings.gatewayToken}`,
+          Authorization: `Bearer ${this.getToken()}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
