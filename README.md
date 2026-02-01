@@ -2,6 +2,28 @@
 
 Chat with OpenClaw directly from Obsidian. Create, edit, and manage notes through conversation.
 
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Opening the Chat Sidebar](#opening-the-chat-sidebar)
+- [Usage](#usage)
+- [File Actions](#file-actions)
+- [Security & Privacy](#security--privacy)
+  - [Token Storage](#token-storage)
+  - [Note Content](#note-content)
+  - [Audit Logging](#audit-logging)
+- [File Sync](#file-sync)
+  - [Prerequisites](#prerequisites)
+  - [Setup](#setup)
+  - [Sync Paths](#sync-paths)
+  - [Conflict Resolution](#conflict-resolution)
+  - [Auto-Sync](#auto-sync)
+- [Configuration](#configuration)
+- [OpenClaw Setup](#openclaw-setup)
+- [Development](#development)
+- [License](#license)
+
 ## Features
 
 - **Chat sidebar** - Talk to OpenClaw from the right sidebar
